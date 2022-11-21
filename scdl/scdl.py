@@ -4,7 +4,7 @@
 """scdl allows you to download music from Soundcloud
 
 Usage:
-    scdl (-l <track_url> | me) [-a | -f | -C | -t | -p | -r][-c | --force-metadata]
+    scdl (-l <track_url> | me) [-a | -f | -C | -t | -w | -p | -r][-c | --force-metadata]
     [-n <maxtracks>][-o <offset>][--hidewarnings][--debug | --error][--path <path>]
     [--addtofile][--addtimestamp][--onlymp3][--hide-progress][--min-size <size>]
     [--max-size <size>][--remove][--no-album-tag][--no-playlist-folder]
@@ -27,6 +27,7 @@ Options:
     -t                              Download all uploads of a user (no reposts)
     -f                              Download all favorites of a user
     -C                              Download all commented by a user
+    -w                              Download all albums of a user
     -p                              Download all playlists of a user
     -r                              Download all reposts of user
     -c                              Continue if a downloaded file already exists
@@ -357,6 +358,13 @@ def download_url(client: SoundCloud, **kwargs):
                     if kwargs.get("strict_playlist"):
                         sys.exit(1)
             logger.info(f"Downloaded all tracks & reposts of user {user.username}!")
+        elif kwargs.get("w"):
+            logger.info(f"Retrieving all albums of user {user.username}...")
+            resources = client.get_user_albums(user.id, limit=1000)
+            for i, album in itertools.islice(enumerate(resources, 1), offset, None):
+                logger.info(f"albums n°{i}")
+                download_playlist(client, album, **kwargs)
+            logger.info(f"Downloaded all albums of user {user.username}!")
         elif kwargs.get("p"):
             logger.info(f"Retrieving all playlists of user {user.username}...")
             resources = client.get_user_playlists(user.id, limit=1000)
